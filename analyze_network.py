@@ -71,7 +71,8 @@ class AnalyzeNetwork:
                     info["IP"] = packet["IP"].src
                 elif info["IP"] != packet[IP].src:
                     info["IP"] = UNKNOWN
-                    mac_unknown = True
+                    ip_unknown = True
+
         if info["MAC"] != UNKNOWN:
             mac = info["MAC"]
             info["Packets sent from MAC"] = (
@@ -80,7 +81,7 @@ class AnalyzeNetwork:
             info["Packets sent to MAC"] = (
                 len(self.packets_to_mac[mac]) if mac in self.packets_to_mac else 0
             )
-
+        info["HTTP DATA"] = UNKNOWN
         if info["IP"] != UNKNOWN:
             ip = info["IP"]
             info["Packets sent from IP"] = (
@@ -89,6 +90,17 @@ class AnalyzeNetwork:
             info["Packets sent to IP"] = (
                 len(self.packets_to_ip[ip]) if ip in self.packets_to_ip else 0
             )
+            for packet in self.packets_from_ip[info["IP"]]:
+                if Raw in packet and b"HTTP" in packet[Raw].load:
+                    raw_data = packet[Raw].load
+                    header_data = raw_data[raw_data.find(b"\r\n") + 2 :]
+                    info["HTTP DATA"] = dict()
+                    for header in header_data.split(b"\r\n")[:-2]:
+                        name, value = (
+                            header[: header.find(b":")].decode(),
+                            header[header.find(b":") + 2 :].decode(),
+                        )
+                        info["HTTP DATA"][name] = value
         try:
             info["VENDOR"] = self.mac_vendor_lookup.lookup(info["MAC"])
         except:
@@ -161,6 +173,6 @@ class AnalyzeNetwork:
 
 if __name__ == "__main__":
     network_analyzer = AnalyzeNetwork(
-        r"C:\Users\eli\Documents\Arazim\Hive\Q@\Guess Who\pcap-02.pcapng"
+        r"C:\Users\eli\Documents\Arazim\Hive\Q@\Guess Who\pcap-03.pcapng"
     )
     print(network_analyzer.get_info())
