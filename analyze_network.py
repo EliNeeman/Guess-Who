@@ -119,11 +119,11 @@ class AnalyzeNetwork:
         for packet in self.packets_from_mac[device_info["MAC"]]:
             if ICMP in packet and Raw in packet:
                 raw_data = packet[Raw].load
-                if packet[IP].ttl == 64 and self._is_macOS_icmp_raw(raw_data):
+                if self._is_macOS_icmp_raw(raw_data):
                     possible_OS.append("macOS")
-                elif packet[IP].ttl == 64 and self._is_linux_icmp_raw(raw_data):
+                if self._is_linux_icmp_raw(raw_data):
                     possible_OS.append("linux")
-                if packet[IP].ttl == 128 and self._is_windows_icmp_raw(raw_data):
+                if self._is_windows_icmp_raw(raw_data):
                     possible_OS.append("windows")
 
         match len(possible_OS):
@@ -161,6 +161,6 @@ class AnalyzeNetwork:
 
 if __name__ == "__main__":
     network_analyzer = AnalyzeNetwork(
-        r"C:\Users\eli\Documents\Arazim\Hive\Q@\Guess Who\pcap-01.pcapng"
+        r"C:\Users\eli\Documents\Arazim\Hive\Q@\Guess Who\pcap-02.pcapng"
     )
     print(network_analyzer.get_info())
